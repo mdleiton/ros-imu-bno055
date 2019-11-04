@@ -265,7 +265,7 @@ class BNO055I2CActivity {
     ros::Publisher pub_mag;
     ros::Publisher pub_temp;
     ros::Publisher pub_status;
-
+    ros::Publisher pub_orientation;
     // ROS subscribers
     ros::ServiceServer service_calibrate;
     ros::ServiceServer service_reset;
