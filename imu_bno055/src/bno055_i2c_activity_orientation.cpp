@@ -7,7 +7,7 @@
 
 #include "imu_bno055/bno055_i2c_activity.h"
 #include "imu_bno055/orientation.h"
-
+#include "std_msgs/Time.h"
 
 namespace imu_bno055 {
 
@@ -18,7 +18,7 @@ BNO055I2CActivity::BNO055I2CActivity(ros::NodeHandle &_nh, ros::NodeHandle &_nh_
     ROS_INFO("initializing");
     nh_priv.param("device", param_device, (std::string)"/dev/i2c-1");
     nh_priv.param("address", param_address, (int)BNO055_ADDRESS_A);
-    nh_priv.param("frame_id", param_frame_id, (std::string)"imu");
+    nh_priv.param("frame_id", param_frame_id, (std::string)"/laser");
 
     current_status.level = 0;
     current_status.name = "BNO055 IMU";
@@ -96,7 +96,8 @@ bool BNO055I2CActivity::reset() {
 bool BNO055I2CActivity::start() {
     ROS_INFO("starting");
 
-    if(!pub_data) pub_data = nh.advertise<sensor_msgs::Imu>("data", 1);
+   if(!pub_data) pub_data = nh.advertise<sensor_msgs::Imu>("data", 1);
+    if(!pub_init) pub_init = nh.advertise<std_msgs::Time>("inicioLectura", 1);
     if(!pub_raw) pub_raw = nh.advertise<sensor_msgs::Imu>("raw", 1);
     if(!pub_mag) pub_mag = nh.advertise<sensor_msgs::MagneticField>("mag", 1);
     if(!pub_temp) pub_temp = nh.advertise<sensor_msgs::Temperature>("temp", 1);
@@ -183,6 +184,10 @@ bool BNO055I2CActivity::spinOnce() {
     msg_data.header.stamp = time;
     msg_data.header.frame_id = param_frame_id;
     msg_data.header.seq = seq;
+    
+    std_msgs::Time init_msg;
+    init_msg.data = time;
+    pub_init.publish(init_msg);
 
     double fused_orientation_norm = std::pow(
       std::pow(record.fused_orientation_w, 2) +
