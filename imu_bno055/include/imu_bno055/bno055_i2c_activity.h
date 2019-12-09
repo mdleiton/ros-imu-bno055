@@ -260,6 +260,7 @@ class BNO055I2CActivity {
     ros::NodeHandle nh_priv;
 
     // ROS publishers
+    ros::Publisher pub_init;
     ros::Publisher pub_data;
     ros::Publisher pub_raw;
     ros::Publisher pub_mag;
