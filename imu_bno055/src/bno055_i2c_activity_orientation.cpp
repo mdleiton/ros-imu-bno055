@@ -96,13 +96,13 @@ bool BNO055I2CActivity::reset() {
 bool BNO055I2CActivity::start() {
     ROS_INFO("starting");
 
-   if(!pub_data) pub_data = nh.advertise<sensor_msgs::Imu>("data", 1);
+   if(!pub_data) pub_data = nh.advertise<sensor_msgs::Imu>("imu/data", 1);
     if(!pub_init) pub_init = nh.advertise<std_msgs::Time>("inicioLectura", 1);
-    if(!pub_raw) pub_raw = nh.advertise<sensor_msgs::Imu>("raw", 1);
-    if(!pub_mag) pub_mag = nh.advertise<sensor_msgs::MagneticField>("mag", 1);
+    if(!pub_raw) pub_raw = nh.advertise<sensor_msgs::Imu>("imu/raw", 1);
+    if(!pub_mag) pub_mag = nh.advertise<sensor_msgs::MagneticField>("imu/mag", 1);
     if(!pub_temp) pub_temp = nh.advertise<sensor_msgs::Temperature>("temp", 1);
     if(!pub_status) pub_status = nh.advertise<diagnostic_msgs::DiagnosticStatus>("status", 1);
-    if(!pub_orientation) pub_orientation = nh.advertise<imu_bno055::orientation>("orientation", 1);
+    if(!pub_orientation) pub_orientation = nh.advertise<imu_bno055::orientation>("imu/orientation", 1);
     if(!service_calibrate) service_calibrate = nh.advertiseService(
         "calibrate",
         &BNO055I2CActivity::onServiceCalibrate,
