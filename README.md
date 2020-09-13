@@ -48,4 +48,3 @@ The Raspberry Pi hardware I2C does not support clock stretching. You have two op
 ## NVIDIA Jetson platforms
 
 You may need to add your user to the i2c group, e.g. `sudo usermod -aG i2c nvidia`. It should just work after that.
-

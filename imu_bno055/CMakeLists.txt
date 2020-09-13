@@ -18,7 +18,8 @@ generate_messages(
 
 catkin_package(INCLUDE_DIRS include)
 
-include_directories(include ${catkin_INCLUDE_DIRS})
+include_directories(include ${catkin_INCLUDE_DIRS}
+        ../../control_pi/include/)
 
 
 add_executable(bno055_i2c_node src/bno055_i2c_activity.cpp src/bno055_i2c_node.cpp src/watchdog.cpp)
