@@ -13,6 +13,8 @@
 #include <sensor_msgs/Temperature.h>
 #include <std_srvs/Trigger.h>
 #include <std_msgs/UInt8.h>
+#include <std_srvs/SetBool.h>
+#include <syslog.h>
 #include <diagnostic_msgs/DiagnosticStatus.h>
 #include <diagnostic_msgs/DiagnosticArray.h>
 #include <diagnostic_msgs/KeyValue.h>
@@ -258,6 +260,7 @@ class BNO055I2CActivity {
     // ROS node handles
     ros::NodeHandle nh;
     ros::NodeHandle nh_priv;
+    bool sendData;
 
     // ROS publishers
     ros::Publisher pub_init;
@@ -267,6 +270,8 @@ class BNO055I2CActivity {
     ros::Publisher pub_temp;
     ros::Publisher pub_status;
     ros::Publisher pub_orientation;
+    ros::ServiceServer sEstablecer;
+
     // ROS subscribers
     ros::ServiceServer service_calibrate;
     ros::ServiceServer service_reset;

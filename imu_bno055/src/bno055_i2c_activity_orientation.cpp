@@ -8,6 +8,25 @@
 #include "imu_bno055/bno055_i2c_activity.h"
 #include "imu_bno055/orientation.h"
 #include "std_msgs/Time.h"
+#include "control_pi/utils.h"
+
+bool sendData = false;
+
+bool establecerCapturaIMU(std_srvs::SetBool::Request  &req, std_srvs::SetBool::Response &res){
+    ROS_INFO("establecerCapturaIMU. Cambiando a : [%s]", bool_str(req.data).c_str());
+    if (req.data){
+        sendData = true;
+        syslog(LOG_INFO, "Nodo IMU iniciando de obtener datos.");
+        res.success = true;
+        res.message = "Nodo IMU iniciando de obtener datos.";
+        return true;
+    }else{
+        sendData = false;
+        res.success = true;
+        res.message = "Nodo IMU dejando de obtener datos.";
+        return true;
+    }
+}
 
 namespace imu_bno055 {
 
@@ -103,6 +122,8 @@ bool BNO055I2CActivity::start() {
     if(!pub_temp) pub_temp = nh.advertise<sensor_msgs::Temperature>("temp", 1);
     if(!pub_status) pub_status = nh.advertise<diagnostic_msgs::DiagnosticStatus>("status", 1);
     if(!pub_orientation) pub_orientation = nh.advertise<imu_bno055::orientation>("imu/orientation", 1);
+    if(!sEstablecer) sEstablecer = nh.advertiseService<std_srvs::SetBool::Request, std_srvs::SetBool::Response>("establecerCapturaIMU", establecerCapturaIMU);
+
     if(!service_calibrate) service_calibrate = nh.advertiseService(
         "calibrate",
         &BNO055I2CActivity::onServiceCalibrate,
@@ -187,7 +208,10 @@ bool BNO055I2CActivity::spinOnce() {
     
     std_msgs::Time init_msg;
     init_msg.data = time;
-    pub_init.publish(init_msg);
+    if(sendData){
+        pub_init.publish(init_msg);
+
+    }
 
     double fused_orientation_norm = std::pow(
       std::pow(record.fused_orientation_w, 2) +
@@ -219,11 +243,13 @@ bool BNO055I2CActivity::spinOnce() {
     msg_orientation.roll = (double) record.fused_roll / 16.0;
     msg_orientation.pitch = (double) record.fused_pitch / 16.0;
 
-    pub_data.publish(msg_data);
-    pub_raw.publish(msg_raw);
-    pub_mag.publish(msg_mag);
-    pub_temp.publish(msg_temp);
-    pub_orientation.publish(msg_orientation);
+    if(sendData){
+        pub_data.publish(msg_data);
+        pub_raw.publish(msg_raw);
+        pub_mag.publish(msg_mag);
+        pub_temp.publish(msg_temp);
+        pub_orientation.publish(msg_orientation);
+    }
 
     if(seq % 50 == 0) {
         current_status.values[DIAG_CALIB_STAT].value = std::to_string(record.calibration_status);
@@ -247,7 +273,7 @@ bool BNO055I2CActivity::stop() {
     if(pub_temp) pub_temp.shutdown();
     if(pub_status) pub_status.shutdown();
    if(pub_orientation) pub_orientation.shutdown();
-
+    if(sEstablecer) sEstablecer.shutdown();
     if(service_calibrate) service_calibrate.shutdown();
     if(service_reset) service_reset.shutdown();
 

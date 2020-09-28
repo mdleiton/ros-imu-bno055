@@ -13,33 +13,13 @@
 #include <syslog.h>
 #include <iostream>
 #include <string>
-#include "control_pi/utils.h"
-
-
-bool sendData;
 
 bool EstadoIMU(std_srvs::SetBool::Request  &req, std_srvs::SetBool::Response &res){
-    std::string pi = "Nodo IMU ejecutándose. Obteniendo datos: " + bool_str(sendData);
+    std::string pi = "Nodo IMU ejecutándose. Obteniendo datos: ";
     res.message = pi;
     res.success =  true;
-    ROS_INFO("Consultado estado de IMU. Respuesta : [%s]-[%s]",bool_str(res.success).c_str(), res.message.c_str());
+    ROS_INFO("Consultado estado de IMU. Respuesta : -[%s]", res.message.c_str());
     return true;
-}
-
-bool establecerCapturaIMU(std_srvs::SetBool::Request  &req, std_srvs::SetBool::Response &res){
-    ROS_INFO("establecerCapturaIMU. Cambiando a : [%s]", bool_str(req.data).c_str());
-    if (req.data){
-        sendData = true;
-        syslog(LOG_INFO, "Nodo IMU iniciando de obtener datos.");
-        res.success = true;
-        res.message = "Nodo IMU iniciando de obtener datos.";
-        return true;
-    }else{
-        sendData = false;
-        res.success = true;
-        res.message = "Nodo IMU dejando de obtener datos.";
-        return true;
-    }
 }
 
 int main(int argc, char *argv[]) {
@@ -67,7 +47,6 @@ int main(int argc, char *argv[]) {
     }
 
     ros::ServiceServer sEstado = nh->advertiseService<std_srvs::SetBool::Request, std_srvs::SetBool::Response>("EstadoIMU", EstadoIMU);
-    ros::ServiceServer sEstablecer = nh->advertiseService<std_srvs::SetBool::Request, std_srvs::SetBool::Response>("establecerCapturaIMU", establecerCapturaIMU);
 
 
     activity = new imu_bno055::BNO055I2CActivity(*nh, *nh_priv);
@@ -90,9 +69,8 @@ int main(int argc, char *argv[]) {
     }
 
     watchdog->start(5000);
-    sendData = true;
     int param_rate;
-    nh_priv->param("rate", param_rate, (int)100);
+    nh_priv->param("rate", param_rate, (int)50);
 
     ros::Rate rate(param_rate);
     while(ros::ok()) {
@@ -102,7 +80,6 @@ int main(int argc, char *argv[]) {
             watchdog->refresh();
         }
     }
-    sendData = false;
     activity->stop();
     watchdog->stop();
 
